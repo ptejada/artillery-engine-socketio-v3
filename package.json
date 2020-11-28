@@ -1,6 +1,6 @@
 {
   "name": "artillery-engine-socketio-v3",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Socket.IO v3 engine for Artillery",
   "main": "index.js",
   "repository": {
