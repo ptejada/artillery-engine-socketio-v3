@@ -5,14 +5,14 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Tejada-Dev/artillery-engine-socketio-v3.git"
+    "url": "git+https://github.com/ptejada/artillery-engine-socketio-v3.git"
   },
   "author": "Pablo Tejada <pablo@tejada.dev>",
   "license": "MPL-2.0",
   "bugs": {
-    "url": "https://github.com/Tejada-Dev/artillery-engine-socketio-v3/issues"
+    "url": "https://github.com/ptejada/artillery-engine-socketio-v3/issues"
   },
-  "homepage": "https://github.com/Tejada-Dev/artillery-engine-socketio-v3#readme",
+  "homepage": "https://github.com/ptejada/artillery-engine-socketio-v3#readme",
   "dependencies": {
     "artillery": "1.6.1",
     "async": "^1.5.2",
