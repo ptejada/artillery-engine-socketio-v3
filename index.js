@@ -7,15 +7,13 @@
 const async = require('async');
 const _ = require('lodash');
 
+const request = require('request');
 const io = require('socket.io-client');
-const wildcardPatch = require('socketio-wildcard')(io.Manager);
-
-const tough = require('tough-cookie');
 
 const deepEqual = require('deep-equal');
 const debug = require('debug')('socketio');
-const engineUtil = require('./engine_util');
-const EngineHttp = require('./engine_http');
+const engineUtil = require('artillery/core/lib/engine_util.js');
+const EngineHttp = require('artillery/core/lib/engine_http.js');
 const template = engineUtil.template;
 module.exports = SocketIoEngine;
 
@@ -41,15 +39,15 @@ SocketIoEngine.prototype.createScenario = function(scenarioSpec, ee) {
 function markEndTime(ee, context, startedAt) {
   let endedAt = process.hrtime(startedAt);
   let delta = (endedAt[0] * 1e9) + endedAt[1];
-  ee.emit('histogram', 'engine.socketio.response_time', delta/1e6);
+  ee.emit('response', delta, 0, context._uid);
 }
 
 function isResponseRequired(spec) {
-  return (spec.emit && spec.emit.response && spec.emit.response.channel);
+  return (spec.emit && spec.response && spec.response.channel);
 }
 
 function isAcknowledgeRequired(spec) {
-  return (spec.emit && spec.emit.acknowledge);
+  return (spec.emit && spec.acknowledge);
 }
 
 function processResponse(ee, data, response, context, callback) {
@@ -157,19 +155,25 @@ SocketIoEngine.prototype.step = function (requestSpec, ee) {
     ee.emit('counter', 'engine.socketio.emit', 1);
     ee.emit('rate', 'engine.socketio.emit_rate');
     let startedAt = process.hrtime();
-    let socketio = context.sockets[requestSpec.emit.namespace] || null;
+    let socketio = context.sockets[requestSpec.namespace] || null;
 
-    if (!(requestSpec.emit && requestSpec.emit.channel && socketio)) {
+    if (!(requestSpec.emit && socketio)) {
       debug('invalid arguments');
       ee.emit('error', 'invalid arguments');
       // TODO: Provide a more helpful message
       callback(new Error('socketio: invalid arguments'));
     }
 
-    let outgoing = {
-      channel: template(requestSpec.emit.channel, context),
-      data: template(requestSpec.emit.data, context)
-    };
+    let outgoing
+
+    if (requestSpec.emit.channel) {
+      outgoing = [
+        template(requestSpec.emit.channel, context),
+        template(requestSpec.emit.data, context)
+      ]
+    } else {
+      outgoing = Array.from(requestSpec.emit).map((arg) => template(arg, context))
+    }
 
     let endCallback = function (err, context, needEmit) {
       if (err) {
@@ -179,9 +183,9 @@ SocketIoEngine.prototype.step = function (requestSpec, ee) {
       if (isAcknowledgeRequired(requestSpec)) {
         let ackCallback = function () {
           let response = {
-            data: template(requestSpec.emit.acknowledge.data, context),
-            capture: template(requestSpec.emit.acknowledge.capture, context),
-            match: template(requestSpec.emit.acknowledge.match, context)
+            data: template(requestSpec.acknowledge.data, context),
+            capture: template(requestSpec.acknowledge.capture, context),
+            match: template(requestSpec.acknowledge.match, context)
           };
           // Make sure data, capture or match has a default json spec for parsing socketio responses
           _.each(response, function (r) {
@@ -200,14 +204,14 @@ SocketIoEngine.prototype.step = function (requestSpec, ee) {
 
         // Acknowledge required so add callback to emit
         if (needEmit) {
-          socketio.emit(outgoing.channel, outgoing.data, ackCallback);
+          socketio.emit(...outgoing, ackCallback);
         } else {
           ackCallback();
         }
       } else {
         // No acknowledge data is expected, so emit without a listener
         if (needEmit) {
-          socketio.emit(outgoing.channel, outgoing.data);
+          socketio.emit(...outgoing);
         }
         markEndTime(ee, context, startedAt);
         return callback(null, context);
@@ -216,10 +220,10 @@ SocketIoEngine.prototype.step = function (requestSpec, ee) {
 
     if (isResponseRequired(requestSpec)) {
       let response = {
-        channel: template(requestSpec.emit.response.channel, context),
-        data: template(requestSpec.emit.response.data, context),
-        capture: template(requestSpec.emit.response.capture, context),
-        match: template(requestSpec.emit.response.match, context)
+        channel: template(requestSpec.response.channel, context),
+        data: template(requestSpec.response.data, context),
+        capture: template(requestSpec.response.capture, context),
+        match: template(requestSpec.response.match, context)
       };
       // Listen for the socket.io response on the specified channel
       let done = false;
@@ -235,7 +239,7 @@ SocketIoEngine.prototype.step = function (requestSpec, ee) {
         });
       });
       // Send the data on the specified socket.io channel
-      socketio.emit(outgoing.channel, outgoing.data);
+      socketio.emit(...outgoing);
       // If we don't get a response within the timeout, fire an error
       let waitTime = self.config.timeout || 10;
       waitTime *= 1000;
@@ -253,9 +257,9 @@ SocketIoEngine.prototype.step = function (requestSpec, ee) {
 
   function preStep(context, callback){
     // Set default namespace in emit action
-    requestSpec.emit.namespace = template(requestSpec.emit.namespace, context) || "";
+    requestSpec.namespace = template(requestSpec.namespace, context) || "";
 
-    self.loadContextSocket(requestSpec.emit.namespace, context, function(err, socket) {
+    self.loadContextSocket(requestSpec.namespace, context, function(err, socket) {
       if(err) {
         debug(err);
         ee.emit('error', err.message);
@@ -289,11 +293,8 @@ SocketIoEngine.prototype.loadContextSocket = function(namespace, context, cb) {
 
     let socket = io(target, options);
     context.sockets[namespace] = socket;
-    wildcardPatch(socket);
 
-    socket.on('*', function () {
-      context.__receivedMessageCount++;
-    });
+    socket.onAny(() => context.__receivedMessageCount++);
 
     socket.once('connect', function() {
       cb(null, socket);
@@ -337,8 +338,8 @@ SocketIoEngine.prototype.compile = function (tasks, scenarioSpec, ee) {
   }
 
   return function scenario(initialContext, callback) {
-    initialContext = self.httpDelegate.setInitialContext(initialContext);
-
+    initialContext._successCount = 0;
+    initialContext._jar = request.jar();
     initialContext._pendingRequests = _.size(
       _.reject(scenarioSpec, function(rs) {
         return (typeof rs.think === 'number');

@@ -1,0 +1,24 @@
+{
+  "name": "artillery-engine-socketio-v3",
+  "version": "1.0.0",
+  "description": "Socket.IO v3 engine for Artillery",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tejada-Dev/artillery-engine-socketio-v3.git"
+  },
+  "author": "Pablo Tejada <pablo@tejada.dev>",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/Tejada-Dev/artillery-engine-socketio-v3/issues"
+  },
+  "homepage": "https://github.com/Tejada-Dev/artillery-engine-socketio-v3#readme",
+  "dependencies": {
+    "artillery": "1.6.1",
+    "async": "^1.5.2",
+    "debug": "^4.3.1",
+    "deep-equal": "^1.0.1",
+    "lodash": "^4.17.20",
+    "socket.io-client": "^3.0.3"
+  }
+}
