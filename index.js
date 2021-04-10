@@ -103,7 +103,7 @@ function processResponse(ee, data, response, context, callback) {
 
         // Populate the context with captured values
         _.each(result.captures, function(v, k) {
-          context.vars[k] = v.value;
+          context.vars[k] = v.value ? v.value : v;
         });
       }
 
