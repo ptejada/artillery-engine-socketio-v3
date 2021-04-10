@@ -29,6 +29,53 @@ scenarios:
         namespace: /nsp1
 ```
 
+Respects `beforeRequest` custom function hook which is fired before emit
+```yml
+config:
+  processor: "./someFileWithSomeFunction.js"
+scenarios:
+  - engine: socketio-v3
+    flow:
+      - emit: ["join", "lobby"]
+        beforeRequest: "someFunction"
+```
+someFileWithSomeFunction.js
+```js
+function someFunction(requestParams, context, userEvents, next) {
+  // do something
+  return next();
+}
+```
+
+There is an option `reconnect` which can be used to force a socket reconnection before emit is fired.
+Use together with setting `extraHeaders` on the context object to enable login flows.
+```yml
+config:
+  processor: "./processor.js"
+scenarios:
+  - engine: socketio-v3
+    flow:
+      - emit: ["login", { username: "creds", password: "secretPword" }]
+        response:
+          channel: "success"
+          capture:
+            json: "$.token"
+            as: "token"
+      - function: "setToken"
+      - emit: ["join", "lobby"]
+        reconnect: true
+        namespace: /authorisedNamespace
+```
+
+processor.js
+```js
+function setToken(context, userEvents, next) {
+  context.extraHeaders = { 'x-auth-token': context.vars.token };
+  return next();  
+}
+```
+
+
 ### Install & Configure
 
 Install with npm
