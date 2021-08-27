@@ -103,7 +103,7 @@ function processResponse(ee, data, response, context, callback) {
 
         // Populate the context with captured values
         _.each(result.captures, function(v, k) {
-          context.vars[k] = v.value;
+          context.vars[k] = v.value ? v.value : v;
         });
       }
 
@@ -259,14 +259,25 @@ SocketIoEngine.prototype.step = function (requestSpec, ee) {
     // Set default namespace in emit action
     requestSpec.namespace = template(requestSpec.namespace, context) || "";
 
-    self.loadContextSocket(requestSpec.namespace, context, function(err, socket) {
+    self.loadContextSocket(requestSpec.namespace, requestSpec.reconnect, context, function(err, socket) {
       if(err) {
         debug(err);
         ee.emit('error', err.message);
         return callback(err, context);
       }
-
-      return f(context, callback);
+      if(requestSpec.beforeRequest && self.config.processor[requestSpec.beforeRequest]) {
+        self.config.processor[requestSpec.beforeRequest](requestSpec,context,ee,function(err) {
+          if(err) {
+            debug(err);
+            ee.emit('error', err.message);
+            return callback(err, context);
+          } else {
+            return f(context, callback);
+          }
+        });
+      } else {
+        return f(context, callback);
+      }
     });
   }
 
@@ -277,14 +288,30 @@ SocketIoEngine.prototype.step = function (requestSpec, ee) {
   }
 };
 
-SocketIoEngine.prototype.loadContextSocket = function(namespace, context, cb) {
+SocketIoEngine.prototype.loadContextSocket = function(namespace, reconnect, context, cb) {
+  if(reconnect) {
+    // Disconnect all sockets
+    SocketIoEngine.prototype.closeContextSockets(context);
+  }
+
   context.sockets = context.sockets || {};
 
   if(!context.sockets[namespace]) {
     let target = this.config.target + namespace;
     let tls = this.config.tls || {};
 
-    const socketioOpts = template(this.socketioOpts, context);
+    const socketioOpts = template(
+      Object.assign({},this.socketioOpts,{
+        extraHeaders: {
+          ...this.socketioOpts.extraHeaders,
+          ...context.extraHeaders
+        },
+        // Require to force socket.io-client to set new headers on connection to different Namespace
+        forceNew: true,
+      }),
+      context
+    );
+
     let options = _.extend(
       {},
       socketioOpts, // templated
@@ -317,6 +344,7 @@ SocketIoEngine.prototype.closeContextSockets = function (context) {
       context.sockets[namespace].disconnect();
     });
   }
+  context.sockets = {};
 };
 
 
@@ -327,7 +355,7 @@ SocketIoEngine.prototype.compile = function (tasks, scenarioSpec, ee) {
   function zero(callback, context) {
     context.__receivedMessageCount = 0;
     ee.emit('started');
-    self.loadContextSocket('', context, function done(err) {
+    self.loadContextSocket('', false, context, function done(err) {
       if (err) {
         ee.emit('error', err);
         return callback(err, context);
