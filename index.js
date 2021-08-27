@@ -43,7 +43,7 @@ function markEndTime(ee, context, startedAt) {
 }
 
 function isResponseRequired(spec) {
-  return (spec.emit && spec.response && spec.response.channel);
+  return (spec.emit && spec.response && (spec.response.channel || spec.response.on));
 }
 
 function isAcknowledgeRequired(spec) {
@@ -52,7 +52,7 @@ function isAcknowledgeRequired(spec) {
 
 function processResponse(ee, data, response, context, callback) {
   // Do we have supplied data to validate?
-  if (response.data && !deepEqual(data, response.data)) {
+  if (response.data && (!deepEqual(data, response.data) || !deepEqual(data, response.data[0]))) {
     debug('data is not valid:');
     debug(data);
     debug(response);
@@ -220,16 +220,16 @@ SocketIoEngine.prototype.step = function (requestSpec, ee) {
 
     if (isResponseRequired(requestSpec)) {
       let response = {
-        channel: template(requestSpec.response.channel, context),
-        data: template(requestSpec.response.data, context),
+        channel: template(requestSpec.response.channel || requestSpec.response.on, context),
+        data: template(requestSpec.response.data || requestSpec.response.args , context),
         capture: template(requestSpec.response.capture, context),
         match: template(requestSpec.response.match, context)
       };
       // Listen for the socket.io response on the specified channel
       let done = false;
-      socketio.on(response.channel, function receive(data) {
+      socketio.on(response.channel, function receive(...args) {
         done = true;
-        processResponse(ee, data, response, context, function(err) {
+        processResponse(ee, args, response, context, function(err) {
           if (!err) {
             markEndTime(ee, context, startedAt);
           }

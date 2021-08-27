@@ -29,6 +29,42 @@ scenarios:
         namespace: /nsp1
 ```
 
+### Install & Configure
+
+Install with npm
+
+```
+npm install -D artillery-engine-socketio-v3
+
+OR
+
+yarn add -D artillery-engine-socketio-v3
+```
+
+Enable the `socketio-v3` engine by listing it in `config.engines`. Ex:
+
+```yml
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 30
+      arrivalRate: 5
+  engines:
+   socketio-v3: {}
+```
+
+In each scenario you must list the engine `socketio-v3` as well. Ex:
+```yml
+scenarios:
+  - name: My first scenario
+    engine: socketio-v3
+    flow:
+      - emit: ["join", "lobby"]
+      - emit: ["message", "lobby", "Hello World"]  
+```
+
+### Testing socket connection and re-connections
+
 Respects `beforeRequest` custom function hook which is fired before emit
 ```yml
 config:
@@ -73,35 +109,4 @@ function setToken(context, userEvents, next) {
   context.extraHeaders = { 'x-auth-token': context.vars.token };
   return next();  
 }
-```
-
-
-### Install & Configure
-
-Install with npm
-
-```
-npm install -D artillery-engine-socketio-v3
-```
-
-Enable the `socketio-v3` engine by listing it in `config.engines`. Ex:
-
-```yml
-config:
-  target: "http://localhost:3000"
-  phases:
-    - duration: 30
-      arrivalRate: 5
-  engines:
-   socketio-v3: {}
-```
-
-In each scenario you must list the engine `socketio-v3` as well. Ex:
-```yml
-scenarios:
-  - name: My first scenario
-    engine: socketio-v3
-    flow:
-      - emit: ["join", "lobby"]
-      - emit: ["message", "lobby", "Hello World"]  
 ```
