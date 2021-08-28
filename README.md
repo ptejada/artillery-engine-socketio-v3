@@ -110,5 +110,8 @@ function setToken(context, userEvents, next) {
   return next();  
 }
 ```
+### Changelog
+[Changelog](CHANGELOG.md)
+
 ### Roadmap
 [Roadmap board](https://github.com/ptejada/artillery-engine-socketio-v3/projects/2)

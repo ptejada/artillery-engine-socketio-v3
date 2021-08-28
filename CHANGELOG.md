@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.1.0] - 2021-08-28
 ### Fixed
 - Bug capturing json value. By [@gruffT](https://github.com/gruffT)
  
@@ -15,5 +17,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for configuring the Socket.IO client options under `config.engines.socketio-v3`
 - `acknowledge.args` as alias of `acknowledge.data`. This is used match the exact params of tha ack function.
 
-[Unreleased]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.0.1...HEAD
-[1.1.0]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.0...v1.0.1
+[Unreleased]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.0.1...v1.1.0
