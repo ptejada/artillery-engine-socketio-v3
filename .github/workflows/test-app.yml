@@ -22,11 +22,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }} + Socket.IO ${{ matrix.socket.io }}
+    - name: Use Node.js ${{ matrix.node-version }} + Socket.IO ${{ matrix.socketio }}
       uses: actions/setup-node@v2
       with:
         node-version: ${{ matrix.node-version }}
     - run: |
         cd test-app 
-        yarn add socket.io@${{ matrix.socket.io }}
+        yarn add socket.io@${{ matrix.socketio }}
         yarn test
