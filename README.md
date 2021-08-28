@@ -1,8 +1,8 @@
 # artillery-engine-socketio-v3
-Socket.IO v3 engine for Artillery
+Socket.IO v3 & v4 engine for Artillery
 
 ### Disclaimer
-In addition to upgrading the Socket.IO lib to version 3 this engine also modifies the original YML API documented at 
+In addition to upgrading the Socket.IO lib to version 3/4 this engine also modifies the original YML API documented at 
 [artillery.io](https://artillery.io/docs/guides/guides/socketio-reference.html#emit).
 
 The `emit` action no longer supports all the other explicit options like `channel` and `data`. Instead, it will accept 
@@ -12,7 +12,7 @@ scenarios:
   - engine: socketio-v3
     flow:
       - emit: ["join", "lobby"]
-      # Also can be written as    
+      # It can also can be written as    
       - emit:
         - join
         - lobby  
@@ -33,11 +33,12 @@ scenarios:
 
 Install with npm
 
-```
+```bash
 npm install -D artillery-engine-socketio-v3
+```
 
-OR
-
+Install with yarn
+```bash
 yarn add -D artillery-engine-socketio-v3
 ```
 
@@ -47,10 +48,23 @@ Enable the `socketio-v3` engine by listing it in `config.engines`. Ex:
 config:
   target: "http://localhost:3000"
   phases:
-    - duration: 30
-      arrivalRate: 5
+    - duration: 5
+      arrivalRate: 1
   engines:
    socketio-v3: {}
+```
+
+You may set Socket.IO client options in `config.engines.socketio-v3`. Ex:
+```yml
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 5
+      arrivalRate: 1
+  engines:
+    socketio-v3:
+      query:
+        token: secret-token
 ```
 
 In each scenario you must list the engine `socketio-v3` as well. Ex:

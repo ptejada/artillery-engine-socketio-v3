@@ -10,8 +10,8 @@
     "test": "DEBUG=socketio ./node_modules/.bin/artillery run artillery.yml"
   },
   "dependencies": {
-    "artillery": "1.6.1",
+    "artillery": "~1.6.1",
     "artillery-engine-socketio-v3": "../",
-    "socket.io": "v3"
+    "socket.io": "v3 || v4"
   }
 }
