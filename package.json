@@ -1,9 +1,11 @@
 {
   "name": "artillery-engine-socketio-v3",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Socket.IO v3 engine for Artillery",
   "main": "index.js",
-  "files": ["index.js"],
+  "files": [
+    "index.js"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ptejada/artillery-engine-socketio-v3.git"
