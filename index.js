@@ -20,7 +20,7 @@ module.exports = SocketIoEngine;
 function SocketIoEngine(script) {
   this.config = script.config;
 
-  this.socketioOpts = this.config.socketio || {};
+  this.socketioOpts = _.extend({}, this.config.socketio, _.get(this.config, 'engines.socketio-v3'));
   this.httpDelegate = new EngineHttp(script);
 }
 
