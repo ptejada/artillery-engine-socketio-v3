@@ -52,7 +52,15 @@ function isAcknowledgeRequired(spec) {
 
 function processResponse(ee, data, response, context, callback) {
   // Do we have supplied data to validate?
-  if (response.data && (!deepEqual(data, response.data) || !deepEqual(data, response.data[0]))) {
+  function isValid() {
+    if (! Array.isArray(response.data)) {
+      return deepEqual(data[0], response.data)
+    }
+
+    return deepEqual(data, response.data)
+  }
+
+  if (response.data && !isValid()) {
     debug('data is not valid:');
     debug(data);
     debug(response);
@@ -68,7 +76,7 @@ function processResponse(ee, data, response, context, callback) {
   }
 
   // Construct the (HTTP) response...
-  let fauxResponse = {body: JSON.stringify(data)};
+  let fauxResponse = {body: JSON.stringify(data.length === 1 ? data[0] : data)};
 
   // Handle the capture or match clauses...
   engineUtil.captureOrMatch(response, fauxResponse, context, function(err, result) {
@@ -181,9 +189,9 @@ SocketIoEngine.prototype.step = function (requestSpec, ee) {
       }
 
       if (isAcknowledgeRequired(requestSpec)) {
-        let ackCallback = function () {
+        let ackCallback = function (...args) {
           let response = {
-            data: template(requestSpec.acknowledge.data, context),
+            data: template(requestSpec.acknowledge.data || requestSpec.acknowledge.args, context),
             capture: template(requestSpec.acknowledge.capture, context),
             match: template(requestSpec.acknowledge.match, context)
           };
@@ -194,7 +202,7 @@ SocketIoEngine.prototype.step = function (requestSpec, ee) {
             }
           });
           // Acknowledge data can take up multiple arguments of the emit callback
-          processResponse(ee, arguments, response, context, function (err) {
+          processResponse(ee, args, response, context, function (err) {
             if (!err) {
               markEndTime(ee, context, startedAt);
             }

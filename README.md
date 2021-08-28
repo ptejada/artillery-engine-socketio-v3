@@ -93,7 +93,7 @@ scenarios:
     flow:
       - emit: ["login", { username: "creds", password: "secretPword" }]
         response:
-          channel: "success"
+          on: "success"
           capture:
             json: "$.token"
             as: "token"
@@ -110,3 +110,5 @@ function setToken(context, userEvents, next) {
   return next();  
 }
 ```
+### Roadmap
+[Roadmap board](https://github.com/ptejada/artillery-engine-socketio-v3/projects/2)
