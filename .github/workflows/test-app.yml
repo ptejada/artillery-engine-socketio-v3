@@ -10,7 +10,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
+  test:
 
     runs-on: ubuntu-latest
 
@@ -26,7 +26,15 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: ${{ matrix.node-version }}
-    - run: |
-        cd test-app 
+    - name: Run Test
+      run: |
+        cd test-app
+        echo "::group::Dependency Install"
         yarn add socket.io@${{ matrix.socketio }}
-        yarn test
+        echo "::endgroup::"
+        echo 'TEST_RESULT<<EOF' >> $GITHUB_ENV
+        yarn test | tee -a $GITHUB_ENV
+        echo 'EOF' >> $GITHUB_ENV
+    - name: Check failure
+      if: contains(env.TEST_RESULT, 'Errors:')
+      run: exit 1
