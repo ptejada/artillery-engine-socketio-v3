@@ -17,6 +17,7 @@ jobs:
     strategy:
       matrix:
         socketio: [v3, v4]
+        artillery: [v1.6, v1]
         node-version: [12.x, 14.x, 16.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
@@ -30,11 +31,11 @@ jobs:
       run: |
         cd test-app
         echo "::group::Dependency Install"
-        yarn add socket.io@${{ matrix.socketio }}
+        yarn add socket.io@${{ matrix.socketio }} artillery@{{ matrix.artillery }}
         echo "::endgroup::"
         echo 'TEST_RESULT<<EOF' >> $GITHUB_ENV
         yarn test | tee -a $GITHUB_ENV
         echo 'EOF' >> $GITHUB_ENV
     - name: Check failure
-      if: contains(env.TEST_RESULT, 'Errors:')
+      if: "contains(env.TEST_RESULT, 'Errors:') || contains(env.TEST_RESULT, 'Scenarios completed: 0')"
       run: exit 1

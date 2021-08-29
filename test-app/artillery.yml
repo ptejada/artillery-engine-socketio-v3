@@ -10,6 +10,11 @@ scenarios:
   - name: First Scenario
     engine: socketio-v3
     flow:
+      - get:
+          url: "/socket.io/"
+          match:
+            json: $.message
+            value: Transport unknown
       - emit: ["join", "lobby"]
         response:
           on: joined
@@ -46,9 +51,9 @@ scenarios:
           capture:
             json: "$.token"
             as: "token"
-      # Configure the token in as header
+      # Configure the token as a http header
       - function: "setToken"
-      # Connecting to secured after successful login should work
+      # Connecting to secured after a successful login should work
       - emit: [ "join", "lobby" ]
         reconnect: true
         namespace: /secured

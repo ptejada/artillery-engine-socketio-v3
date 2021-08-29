@@ -7,7 +7,6 @@
 const async = require('async');
 const _ = require('lodash');
 
-const request = require('request');
 const io = require('socket.io-client');
 
 const deepEqual = require('deep-equal');
@@ -374,8 +373,15 @@ SocketIoEngine.prototype.compile = function (tasks, scenarioSpec, ee) {
   }
 
   return function scenario(initialContext, callback) {
-    initialContext._successCount = 0;
-    initialContext._jar = request.jar();
+    // Support for artillery v1.7+
+    if (self.httpDelegate.setInitialContext) {
+      initialContext = self.httpDelegate.setInitialContext(initialContext)
+    } else {
+      // Backwards compatability for v1.6
+      initialContext._successCount = 0;
+      initialContext._jar = require('./cookies').jar()
+    }
+
     initialContext._pendingRequests = _.size(
       _.reject(scenarioSpec, function(rs) {
         return (typeof rs.think === 'number');
