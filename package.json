@@ -4,7 +4,8 @@
   "description": "Socket.IO v3 engine for Artillery",
   "main": "index.js",
   "files": [
-    "index.js"
+    "index.js",
+    "cookies.js"
   ],
   "repository": {
     "type": "git",

@@ -31,7 +31,7 @@ jobs:
       run: |
         cd test-app
         echo "::group::Dependency Install"
-        yarn add socket.io@${{ matrix.socketio }} artillery@{{ matrix.artillery }}
+        yarn add socket.io@${{ matrix.socketio }} artillery@${{ matrix.artillery }}
         echo "::endgroup::"
         echo 'TEST_RESULT<<EOF' >> $GITHUB_ENV
         yarn test | tee -a $GITHUB_ENV
