@@ -11,23 +11,22 @@ on:
 
 jobs:
   test:
-
+    name: Test Node.js ${{ matrix.node-version }} + Socket.IO ${{ matrix.socketio }} + Artillery ${{ matrix.artillery }}
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        socketio: [v3, v4]
-        artillery: [v1.6, v1]
         node-version: [12.x, 14.x, 16.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+        artillery: [v1.6, v1]
+        socketio: [v3, v4]
 
     steps:
     - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }} + Socket.IO ${{ matrix.socketio }}
+    - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v2
       with:
         node-version: ${{ matrix.node-version }}
-    - name: Run Test
+    - name: Run Test with Socket.IO ${{ matrix.socketio }} + Artillery ${{ matrix.artillery }}
       run: |
         cd test-app
         echo "::group::Dependency Install"

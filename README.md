@@ -1,4 +1,7 @@
 # artillery-engine-socketio-v3
+[![npm version](https://badge.fury.io/js/artillery-engine-socketio-v3.svg)](https://badge.fury.io/js/artillery-engine-socketio-v3)
+[![Test App](https://github.com/ptejada/artillery-engine-socketio-v3/actions/workflows/test-app.yml/badge.svg)](https://github.com/ptejada/artillery-engine-socketio-v3/actions/workflows/test-app.yml)
+
 Socket.IO v3 & v4 engine for Artillery
 
 ### Disclaimer

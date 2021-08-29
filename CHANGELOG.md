@@ -6,8 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Socket.IO v4 as a compatible version.
 - Compatability with Artillery v1.7+
+
+## [1.1.1] - 2021-08-28
+### Added
+- Socket.IO v4 as a compatible version.
 
 ## [1.1.0] - 2021-08-28
 ### Fixed
@@ -20,5 +23,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for configuring the Socket.IO client options under `config.engines.socketio-v3`
 - `acknowledge.args` as an alias of `acknowledge.data`. This is used to match the exact params of the ack function.
 
-[Unreleased]: https://github.com/ptejada/artillery-engine-socketio-v3/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/ptejada/artillery-engine-socketio-v3/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com//ptejada/artillery-engine-socketio-v3/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com//ptejada/artillery-engine-socketio-v3/compare/v1.0.1...v1.1.0
