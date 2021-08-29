@@ -5,7 +5,7 @@ name: Test App
 
 on:
   push:
-    branches: [ master ]
+    branches: [ action-test ]
   pull_request:
     branches: [ master ]
 
@@ -16,8 +16,8 @@ jobs:
 
     strategy:
       matrix:
-        socketio: [v3, v4]
-        node-version: [12.x, 14.x, 16.x]
+        socketio: [v4]
+        node-version: [16.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -26,7 +26,14 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: ${{ matrix.node-version }}
-    - run: |
+    - name: Run Test
+      run: |
         cd test-app 
         yarn add socket.io@${{ matrix.socketio }}
-        yarn test
+        echo "::set-output name=result::$(yarn test)\n"
+      id: test
+    - name: Check failure
+      if: contains(steps.test.outputs.result, 'Errors:')
+      run: |
+        echo "Oops"
+        exit 1

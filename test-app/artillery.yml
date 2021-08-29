@@ -13,7 +13,7 @@ scenarios:
       - emit: ["join", "lobby"]
         response:
           on: joined
-          args: ["Welcome to lobby"]
+          args: ["Welcome to lobby 2"]
       - emit: ["message", "lobby", "Hello everyone!"]
         response:
           on: message
