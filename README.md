@@ -8,8 +8,8 @@ Socket.IO v3 & v4 engine for Artillery
 In addition to upgrading the Socket.IO lib to version 3/4 this engine also modifies the original YML API documented at 
 [artillery.io](https://artillery.io/docs/guides/guides/socketio-reference.html#emit).
 
-The `emit` action no longer supports all the other explicit options like `channel` and `data`. Instead, it will accept 
-a list or array of arguments that will be passed to the Socket.IO `emit` function. Ex:   
+The `emit` action no longer supports the explicit options `channel` and `data`. Instead, it will accept 
+a list or array of arguments that will be passed to the Socket.IO `emit` function. Ex:
 ```yml
 scenarios:
   - engine: socketio-v3
