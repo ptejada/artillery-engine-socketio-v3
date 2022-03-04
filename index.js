@@ -15,11 +15,13 @@ const engineUtil = require('artillery/core/lib/engine_util.js');
 const EngineHttp = require('artillery/core/lib/engine_http.js');
 const template = engineUtil.template;
 module.exports = SocketIoEngine;
+const msgPackParser = require('socket.io-msgpack-parser');
 
 function SocketIoEngine(script) {
   this.config = script.config;
 
   this.socketioOpts = _.extend({}, this.config.socketio, _.get(this.config, 'engines.socketio-v3'));
+
   this.httpDelegate = new EngineHttp(script);
 }
 
@@ -324,6 +326,10 @@ SocketIoEngine.prototype.loadContextSocket = function(namespace, reconnect, cont
       socketioOpts, // templated
       tls
     );
+
+    if(this.socketioOpts.parser === "msgpack") {
+      options["parser"] = msgPackParser
+    }
 
     let socket = io(target, options);
     context.sockets[namespace] = socket;
