@@ -69,6 +69,21 @@ config:
       query:
         token: secret-token
 ```
+If you have [socket.io-msgpack-parser](https://github.com/socketio/socket.io-msgpack-parser) enabled on your server, you need to enable this parser by setting `parser` option to `msgpack`: 
+
+
+```yml
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 5
+      arrivalRate: 1
+  engines:
+    socketio-v3:
+      parser: msgpack
+      query:
+        token: secret-token
+```
 
 In each scenario you must list the engine `socketio-v3` as well. Ex:
 ```yml
