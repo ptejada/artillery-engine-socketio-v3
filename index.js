@@ -15,7 +15,6 @@ const engineUtil = require('artillery/core/lib/engine_util.js');
 const EngineHttp = require('artillery/core/lib/engine_http.js');
 const template = engineUtil.template;
 module.exports = SocketIoEngine;
-const msgPackParser = require('socket.io-msgpack-parser');
 
 function SocketIoEngine(script) {
   this.config = script.config;
@@ -328,7 +327,7 @@ SocketIoEngine.prototype.loadContextSocket = function(namespace, reconnect, cont
     );
 
     if(this.socketioOpts.parser === "msgpack") {
-      options["parser"] = msgPackParser
+      options["parser"] = require('socket.io-msgpack-parser');
     }
 
     let socket = io(target, options);
