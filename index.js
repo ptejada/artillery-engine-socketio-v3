@@ -24,9 +24,9 @@ function SocketIoEngine(script) {
   this.httpDelegate = new EngineHttp(script);
 }
 
-SocketIoEngine.prototype.createScenario = function (scenarioSpec, ee) {
+SocketIoEngine.prototype.createScenario = function(scenarioSpec, ee) {
   var self = this;
-  let tasks = _.map(scenarioSpec.flow, function (rs) {
+  let tasks = _.map(scenarioSpec.flow, function(rs) {
     if (rs.think) {
       return engineUtil.createThink(rs, _.get(self.config, 'defaults.think', {}));
     }
@@ -53,7 +53,7 @@ function isAcknowledgeRequired(spec) {
 function processResponse(ee, data, response, context, callback) {
   // Do we have supplied data to validate?
   function isValid() {
-    if (!Array.isArray(response.data)) {
+    if (! Array.isArray(response.data)) {
       return deepEqual(data[0], response.data)
     }
 
@@ -76,10 +76,10 @@ function processResponse(ee, data, response, context, callback) {
   }
 
   // Construct the (HTTP) response...
-  let fauxResponse = { body: JSON.stringify(data.length === 1 ? data[0] : data) };
+  let fauxResponse = {body: JSON.stringify(data.length === 1 ? data[0] : data)};
 
   // Handle the capture or match clauses...
-  engineUtil.captureOrMatch(response, fauxResponse, context, function (err, result) {
+  engineUtil.captureOrMatch(response, fauxResponse, context, function(err, result) {
     // Were we unable to invoke captureOrMatch?
     if (err) {
       debug(data);
@@ -110,7 +110,7 @@ function processResponse(ee, data, response, context, callback) {
         // });
 
         // Populate the context with captured values
-        _.each(result.captures, function (v, k) {
+        _.each(result.captures, function(v, k) {
           context.vars[k] = v.value ? v.value : v;
         });
       }
@@ -131,7 +131,7 @@ SocketIoEngine.prototype.step = function (requestSpec, ee) {
   let self = this;
 
   if (requestSpec.loop) {
-    let steps = _.map(requestSpec.loop, function (rs) {
+    let steps = _.map(requestSpec.loop, function(rs) {
       if (!rs.emit && !rs.loop) {
         return self.httpDelegate.step(rs, ee);
       }
@@ -151,7 +151,7 @@ SocketIoEngine.prototype.step = function (requestSpec, ee) {
     );
   }
 
-  let f = function (context, callback) {
+  let f = function(context, callback) {
     // Only process emit requests; delegate the rest to the HTTP engine (or think utility)
     if (requestSpec.think) {
       return engineUtil.createThink(requestSpec, _.get(self.config, 'defaults.think', {}));
@@ -229,7 +229,7 @@ SocketIoEngine.prototype.step = function (requestSpec, ee) {
     if (isResponseRequired(requestSpec)) {
       let response = {
         channel: template(requestSpec.response.channel || requestSpec.response.on, context),
-        data: template(requestSpec.response.data || requestSpec.response.args, context),
+        data: template(requestSpec.response.data || requestSpec.response.args , context),
         capture: template(requestSpec.response.capture, context),
         match: template(requestSpec.response.match, context)
       };
@@ -237,7 +237,7 @@ SocketIoEngine.prototype.step = function (requestSpec, ee) {
       let done = false;
       socketio.on(response.channel, function receive(...args) {
         done = true;
-        processResponse(ee, args, response, context, function (err) {
+        processResponse(ee, args, response, context, function(err) {
           if (!err) {
             markEndTime(ee, context, startedAt);
           }
@@ -263,19 +263,19 @@ SocketIoEngine.prototype.step = function (requestSpec, ee) {
     }
   };
 
-  function preStep(context, callback) {
+  function preStep(context, callback){
     // Set default namespace in emit action
     requestSpec.namespace = template(requestSpec.namespace, context) || "";
 
-    self.loadContextSocket(requestSpec.namespace, requestSpec.reconnect, context, function (err, socket) {
-      if (err) {
+    self.loadContextSocket(requestSpec.namespace, requestSpec.reconnect, context, function(err, socket) {
+      if(err) {
         debug(err);
         ee.emit('error', err.message);
         return callback(err, context);
       }
-      if (requestSpec.beforeRequest && self.config.processor[requestSpec.beforeRequest]) {
-        self.config.processor[requestSpec.beforeRequest](requestSpec, context, ee, function (err) {
-          if (err) {
+      if(requestSpec.beforeRequest && self.config.processor[requestSpec.beforeRequest]) {
+        self.config.processor[requestSpec.beforeRequest](requestSpec,context,ee,function(err) {
+          if(err) {
             debug(err);
             ee.emit('error', err.message);
             return callback(err, context);
@@ -289,27 +289,27 @@ SocketIoEngine.prototype.step = function (requestSpec, ee) {
     });
   }
 
-  if (requestSpec.emit) {
+  if(requestSpec.emit) {
     return preStep;
   } else {
     return f;
   }
 };
 
-SocketIoEngine.prototype.loadContextSocket = function (namespace, reconnect, context, cb) {
-  if (reconnect) {
+SocketIoEngine.prototype.loadContextSocket = function(namespace, reconnect, context, cb) {
+  if(reconnect) {
     // Disconnect all sockets
     SocketIoEngine.prototype.closeContextSockets(context);
   }
 
   context.sockets = context.sockets || {};
 
-  if (!context.sockets[namespace]) {
+  if(!context.sockets[namespace]) {
     let target = this.config.target + namespace;
     let tls = this.config.tls || {};
 
     const socketioOpts = template(
-      Object.assign({}, this.socketioOpts, {
+      Object.assign({},this.socketioOpts,{
         extraHeaders: {
           ...this.socketioOpts.extraHeaders,
           ...context.extraHeaders
@@ -329,7 +329,7 @@ SocketIoEngine.prototype.loadContextSocket = function (namespace, reconnect, con
       tls
     );
 
-    if (this.socketioOpts.parser === "msgpack") {
+    if(this.socketioOpts.parser === "msgpack") {
       options["parser"] = require('socket.io-msgpack-parser');
     }
 
@@ -338,10 +338,10 @@ SocketIoEngine.prototype.loadContextSocket = function (namespace, reconnect, con
 
     socket.onAny(() => context.__receivedMessageCount++);
 
-    socket.once('connect', function () {
+    socket.once('connect', function() {
       cb(null, socket);
     });
-    socket.once('connect_error', function (err) {
+    socket.once('connect_error', function(err) {
       cb(err, null);
     });
   } else {
@@ -353,9 +353,9 @@ SocketIoEngine.prototype.closeContextSockets = function (context) {
   // if(context.socketio) {
   //   context.socketio.disconnect();
   // }
-  if (context.sockets && Object.keys(context.sockets).length > 0) {
+  if(context.sockets && Object.keys(context.sockets).length > 0) {
     var namespaces = Object.keys(context.sockets);
-    namespaces.forEach(function (namespace) {
+    namespaces.forEach(function(namespace){
       context.sockets[namespace].disconnect();
     });
   }
@@ -391,7 +391,7 @@ SocketIoEngine.prototype.compile = function (tasks, scenarioSpec, ee) {
     }
 
     initialContext._pendingRequests = _.size(
-      _.reject(scenarioSpec, function (rs) {
+      _.reject(scenarioSpec, function(rs) {
         return (typeof rs.think === 'number');
       }));
 
