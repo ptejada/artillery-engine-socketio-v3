@@ -1,5 +1,5 @@
 config:
-  target: "http://localhost:3009"
+  target: "http://localhost:{{ $processEnvironment.SERVER_PORT }}"
   phases:
     - duration: 1
       arrivalRate: 1

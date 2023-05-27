@@ -1,4 +1,4 @@
-const io = require('socket.io')(3009);
+const io = require('socket.io')(process.env.SERVER_PORT);
 const crypto = require('crypto');
 
 io.on('connection', function(socket) {
