@@ -296,6 +296,16 @@ SocketIoEngine.prototype.step = function (requestSpec, ee) {
   }
 };
 
+/**
+ * Loads and initialize the socket context
+ *
+ * @param {string} namespace
+ * @param {boolean} reconnect
+ * @param {object} context
+ * @param {SocketIoEngine~contextSocketCallback} cb
+ *
+ * @returns {*}
+ */
 SocketIoEngine.prototype.loadContextSocket = function(namespace, reconnect, context, cb) {
   if(reconnect) {
     // Disconnect the namespace socket
@@ -312,8 +322,8 @@ SocketIoEngine.prototype.loadContextSocket = function(namespace, reconnect, cont
           ...this.socketioOpts.extraHeaders,
           ...context.extraHeaders
         },
-        // Require to force socket.io-client to set new headers on connection to different Namespace
-        forceNew: true,
+        // Require to force socket.io-client to set new headers on connection to different Namespace only if reconnecting
+        forceNew: Boolean(reconnect),
       }),
       context
     );
@@ -408,3 +418,11 @@ SocketIoEngine.prototype.compile = function (tasks, scenarioSpec, ee) {
       });
   };
 };
+
+/**
+ * Callback for SocketIoEngine.loadContextSocket
+ *
+ * @callback SocketIoEngine~contextSocketCallback
+ * @param {string} err
+ * @param {io.Socket} socket
+ */
