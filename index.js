@@ -39,7 +39,7 @@ SocketIoEngine.prototype.createScenario = function(scenarioSpec, ee) {
 function markEndTime(ee, context, startedAt) {
   let endedAt = process.hrtime(startedAt);
   let delta = (endedAt[0] * 1e9) + endedAt[1];
-  ee.emit('response', delta, 0, context._uid);
+  ee.emit('response', delta, 101, context._uid);
 }
 
 function isResponseRequired(spec) {
@@ -298,11 +298,9 @@ SocketIoEngine.prototype.step = function (requestSpec, ee) {
 
 SocketIoEngine.prototype.loadContextSocket = function(namespace, reconnect, context, cb) {
   if(reconnect) {
-    // Disconnect all sockets
-    SocketIoEngine.prototype.closeContextSockets(context);
+    // Disconnect the namespace socket
+    SocketIoEngine.prototype.closeContextSockets(context, namespace);
   }
-
-  context.sockets = context.sockets || {};
 
   if(!context.sockets[namespace]) {
     let target = this.config.target + namespace;
@@ -346,17 +344,18 @@ SocketIoEngine.prototype.loadContextSocket = function(namespace, reconnect, cont
   }
 };
 
-SocketIoEngine.prototype.closeContextSockets = function (context) {
-  // if(context.socketio) {
-  //   context.socketio.disconnect();
-  // }
-  if(context.sockets && Object.keys(context.sockets).length > 0) {
-    var namespaces = Object.keys(context.sockets);
-    namespaces.forEach(function(namespace){
+SocketIoEngine.prototype.closeContextSockets = function (context, namespace) {
+  if (namespace !== undefined) {
+    // Close the connection for the given namespace
+    if (context.sockets[namespace]) {
       context.sockets[namespace].disconnect();
-    });
+      delete context.sockets[namespace]
+    }
+  } else {
+    // Close all connections
+    Object.values(context.sockets).forEach(socket => socket.disconnect())
+    context.sockets = {}
   }
-  context.sockets = {};
 };
 
 
@@ -386,6 +385,9 @@ SocketIoEngine.prototype.compile = function (tasks, scenarioSpec, ee) {
       initialContext._successCount = 0;
       initialContext._jar = require('./cookies').jar()
     }
+
+    // Stores all the Socket.IO sockets
+    initialContext.sockets = {}
 
     initialContext._pendingRequests = _.size(
       _.reject(scenarioSpec, function(rs) {
