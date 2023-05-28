@@ -92,9 +92,9 @@ scenarios:
     engine: socketio-v3
     flow:
       - get:
-          url: https://httpbin.org/uuid
+          url: /get-token
           capture:
-            json: "$.uuid"
+            json: "$.token"
             as: "token"
       - connect:
           auth:

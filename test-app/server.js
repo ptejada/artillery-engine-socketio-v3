@@ -1,5 +1,8 @@
-const io = require('socket.io')(process.env.SERVER_PORT);
+const httpServer = require('http').createServer(requestListener)
+const io = require('socket.io')(httpServer);
 const crypto = require('crypto');
+
+httpServer.listen(process.env.SERVER_PORT)
 
 io.on('connection', function(socket) {
   socket.on('join', (channel) => {
@@ -12,13 +15,10 @@ io.on('connection', function(socket) {
   })
 });
 
-const tokens = ['all-access-token']
 io.of('secured').on('connection', function(socket) {
   socket.on('login', function({username, password}) {
     if (username === password) {
-      const token = crypto.randomBytes(20).toString('hex')
-      tokens.push(token)
-      socket.emit('success', {token})
+      socket.emit('success', {token: makeToken()})
     }
   })
 
@@ -74,4 +74,26 @@ function validAuth({token, type}) {
   }
 
   return false;
+}
+
+function requestListener(req, res) {
+  switch (req.url) {
+    case '/get-token':
+      res.setHeader("Content-Type", "application/json");
+      res.writeHead(200);
+      res.end(JSON.stringify({token: makeToken()}));
+      break;
+    default:
+      res.writeHead(404);
+      res.end();
+      break
+  }
+}
+
+const tokens = ['all-access-token']
+function makeToken () {
+  const token = crypto.randomBytes(20).toString('hex')
+  tokens.push(token)
+
+  return token
 }
