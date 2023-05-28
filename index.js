@@ -235,14 +235,12 @@ SocketIoEngine.prototype.step = function (requestSpec, ee) {
       };
       // Listen for the socket.io response on the specified channel
       let done = false;
-      socketio.on(response.channel, function receive(...args) {
+      socketio.once(response.channel, function receive(...args) {
         done = true;
         processResponse(ee, args, response, context, function(err) {
           if (!err) {
             markEndTime(ee, context, startedAt);
           }
-          // Stop listening on the response channel
-          socketio.off(response.channel);
           return endCallback(err, context, false);
         });
       });
@@ -267,12 +265,22 @@ SocketIoEngine.prototype.step = function (requestSpec, ee) {
     // Set default namespace in emit action
     requestSpec.namespace = template(requestSpec.namespace, context) || "";
 
-    self.loadContextSocket(requestSpec.namespace, requestSpec.reconnect, context, function(err, socket) {
+    let connectionOnly = requestSpec?.connect
+
+    // Backward compatability for the reconnect option
+    connectionOnly ??= requestSpec.reconnect ? {} : undefined
+
+    self.loadContextSocket(requestSpec.namespace, connectionOnly, context, function(err, socket) {
       if(err) {
         debug(err);
         ee.emit('error', err.message);
         return callback(err, context);
       }
+
+      if (connectionOnly && ! requestSpec.emit) {
+        return callback(null, context);
+      }
+
       if(requestSpec.beforeRequest && self.config.processor[requestSpec.beforeRequest]) {
         self.config.processor[requestSpec.beforeRequest](requestSpec,context,ee,function(err) {
           if(err) {
@@ -289,7 +297,7 @@ SocketIoEngine.prototype.step = function (requestSpec, ee) {
     });
   }
 
-  if(requestSpec.emit) {
+  if(requestSpec.emit || requestSpec.connect) {
     return preStep;
   } else {
     return f;
@@ -300,14 +308,14 @@ SocketIoEngine.prototype.step = function (requestSpec, ee) {
  * Loads and initialize the socket context
  *
  * @param {string} namespace
- * @param {boolean} reconnect
+ * @param {object=} connectionOnly
  * @param {object} context
  * @param {SocketIoEngine~contextSocketCallback} cb
  *
  * @returns {*}
  */
-SocketIoEngine.prototype.loadContextSocket = function(namespace, reconnect, context, cb) {
-  if(reconnect) {
+SocketIoEngine.prototype.loadContextSocket = function(namespace, connectionOnly, context, cb) {
+  if(connectionOnly) {
     // Disconnect the namespace socket
     SocketIoEngine.prototype.closeContextSockets(context, namespace);
   }
@@ -317,13 +325,16 @@ SocketIoEngine.prototype.loadContextSocket = function(namespace, reconnect, cont
     let tls = this.config.tls || {};
 
     const socketioOpts = template(
-      Object.assign({},this.socketioOpts,{
+      Object.assign({},this.socketioOpts, {
+        // Require to force socket.io-client to set new headers on connection to different Namespace only if reconnecting
+        forceNew: Boolean(connectionOnly),
+        ...connectionOnly,
+        // TODO: Deprecate some of this options to setup extraHeaders
         extraHeaders: {
           ...this.socketioOpts.extraHeaders,
-          ...context.extraHeaders
+          ...context.extraHeaders,
+          ...connectionOnly?.extraHeaders
         },
-        // Require to force socket.io-client to set new headers on connection to different Namespace only if reconnecting
-        forceNew: Boolean(reconnect),
       }),
       context
     );
@@ -423,6 +434,6 @@ SocketIoEngine.prototype.compile = function (tasks, scenarioSpec, ee) {
  * Callback for SocketIoEngine.loadContextSocket
  *
  * @callback SocketIoEngine~contextSocketCallback
- * @param {string} err
+ * @param {Error} err
  * @param {io.Socket} socket
  */
