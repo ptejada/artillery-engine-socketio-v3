@@ -1,13 +1,13 @@
 config:
   target: "http://localhost:{{ $processEnvironment.SERVER_PORT }}"
   phases:
-    - duration: 1
-      arrivalRate: 1
+    - duration: 2
+      arrivalRate: 10
   engines:
     socketio-v3: {}
   processor: "./functions.js"
 scenarios:
-  - name: First Scenario
+  - name: Multi namespace and multi connection
     engine: socketio-v3
     flow:
       - get:
@@ -61,3 +61,47 @@ scenarios:
           on: joined
           args:
             - Welcome to secured channel lobby
+  - name: Authentication via headers
+    engine: socketio-v3
+    flow:
+      - emit: [ "login", { username: "setup", password: "setup" } ]
+        namespace: /secured
+        response:
+          on: "success"
+          capture:
+            json: "$.token"
+            as: "token"
+      - function: "setToken"
+      - emit: [ "join", "lobby" ]
+        reconnect: true
+        namespace: /secured
+        acknowledge:
+          args: true
+  - name: Authentication via Auth
+    engine: socketio-v3
+    flow:
+      - connect:
+          auth:
+            token: "all-access-token"
+        namespace: /secured-md
+      - emit: [ "ping" ]
+        namespace: /secured-md
+        acknowledge:
+          args: true
+  - name: Authentication via Dynamic Auth from external service
+    engine: socketio-v3
+    flow:
+      - get:
+          url: https://httpbin.org/uuid
+          capture:
+            json: "$.uuid"
+            as: "token"
+      - connect:
+          auth:
+            type: uuid
+            token: "{{token}}"
+        namespace: /secured-md
+      - emit: [ "ping" ]
+        namespace: /secured-md
+        acknowledge:
+          args: true
