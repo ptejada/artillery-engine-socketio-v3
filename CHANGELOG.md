@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Added new `connect` action to provide greater control over WS connection during the scenario flow.
+
+### Fixed
+- Fixed bug disconnecting all sockets when forcing a new connection.
+
+### Changes
+- The connection to the Socket.IO server will be made only when needed instead of during staging phase for the scenario.
+- Instead of tracking the Websocket messages with code 0 in the Summary of an execution it will now appear as 101.  
 
 ## [1.1.2] - 2021-08-29
 ### Added

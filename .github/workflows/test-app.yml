@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         node-version: [14, 16, 18, 19]
-        artillery: [v1.6, v1]
+        artillery: [v1]
         socketio: [v3, v4]
 
     steps:
