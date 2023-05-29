@@ -41,13 +41,15 @@ const scenarioExpectation = {
 const scenarioFiles = fs.readdirSync('artillery').filter(file => file.endsWith('.yml'))
 
 let port = process.env.PORT || 3009;
+let errors = [];
 scenarioFiles.forEach((fileName) => {
   const file = `artillery/${fileName}`
 
   try {
     const result = execSync(`SERVER_PORT=${port++} npx artillery run ${file}`).toString();
 
-    validateResult(fileName, result)
+    errors = errors.concat(validateResult(fileName, result))
+    console.log(result)
   } catch (err) {
     console.log(`Failed run scenario ${fileName}.`)
     console.log(err.stderr.toString())
@@ -55,6 +57,12 @@ scenarioFiles.forEach((fileName) => {
     process.exit(err.status)
   }
 })
+
+if (errors.length) {
+  console.log(`Assertion Errors:`)
+  errors.map(err => console.log(`  ${err}`))
+  console.log('\n');
+}
 
 function validateResult(fileName, result) {
   const errors = [];
@@ -86,16 +94,7 @@ function validateResult(fileName, result) {
     errors.push('Scenario expectations failed.')
   }
 
-  if (errors.length) {
-    console.log(result)
-    console.log(`[${fileName}] Errors:`)
-    errors.map(err => console.log(`  ${err}`))
-    console.log('\n');
-
-    return false
-  }
-
-  return true
+  return errors.map(err => `[${fileName}] ${err}`);
 }
 
 function strChunk(source, after) {

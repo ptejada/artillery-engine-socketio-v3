@@ -8,6 +8,9 @@ To run the test plan:
 3. To run the test plan execute `yarn test` or `npm test`
 
 If all goes well there should not be any errors in output.
-```
 
+To test specific test scenarios from the `artillery` folder user the following command where the `[FILE NAME]` is the 
+name of the file scenario you want to test:
+```
+SERVER_PORT=3009 npx artillery run artillery/[FILE NAME].yml
 ```
