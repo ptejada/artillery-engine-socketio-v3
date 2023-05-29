@@ -36,5 +36,5 @@ jobs:
         yarn test-new | tee -a $GITHUB_ENV
         echo 'EOF' >> $GITHUB_ENV
     - name: Check failure
-      if: "contains(env.TEST_RESULT, 'Errors:') || contains(env.TEST_RESULT, 'Scenarios completed: 0')"
+      if: "contains(env.TEST_RESULT, 'Errors:') || contains(env.TEST_RESULT, 'Scenarios completed: 0') || contains(env.TEST_RESULT, 'error Command failed')"
       run: exit 1
