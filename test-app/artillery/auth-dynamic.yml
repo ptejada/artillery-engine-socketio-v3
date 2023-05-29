@@ -1,0 +1,26 @@
+config:
+  target: "http://localhost:{{ $processEnvironment.SERVER_PORT }}"
+  phases:
+    - duration: 1
+      arrivalRate: 1
+  engines:
+    socketio-v3: {}
+  processor: "../functions.js"
+scenarios:
+  - name: Authentication via Dynamic Auth from external service
+    engine: socketio-v3
+    flow:
+      - get:
+          url: /get-token
+          capture:
+            json: "$.token"
+            as: "token"
+      - connect:
+          auth:
+            type: uuid
+            token: "{{token}}"
+        namespace: /secured-md
+      - emit: [ "ping" ]
+        namespace: /secured-md
+        acknowledge:
+          args: true

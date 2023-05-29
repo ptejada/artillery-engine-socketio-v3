@@ -1,0 +1,25 @@
+config:
+  target: "http://localhost:{{ $processEnvironment.SERVER_PORT }}"
+  phases:
+    - duration: 1
+      arrivalRate: 1
+  engines:
+    socketio-v3: {}
+  processor: "../functions.js"
+scenarios:
+  - name: Authentication via headers
+    engine: socketio-v3
+    flow:
+      - emit: [ "login", { username: "setup", password: "setup" } ]
+        namespace: /secured
+        response:
+          on: "success"
+          capture:
+            json: "$.token"
+            as: "token"
+      - function: "setToken"
+      - emit: [ "join", "lobby" ]
+        reconnect: true
+        namespace: /secured
+        acknowledge:
+          args: true

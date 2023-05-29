@@ -1,0 +1,63 @@
+config:
+  target: "http://localhost:{{ $processEnvironment.SERVER_PORT }}"
+  phases:
+    - duration: 1
+      arrivalRate: 1
+  engines:
+    socketio-v3: {}
+  processor: "../functions.js"
+scenarios:
+  - name: Multi namespace and multi connection
+    engine: socketio-v3
+    flow:
+      - get:
+          url: "/socket.io/"
+          match:
+            json: $.message
+            value: Transport unknown
+      - emit: ["join", "lobby"]
+        response:
+          on: joined
+          args: ["Welcome to lobby"]
+      - emit: ["message", "lobby", "Hello everyone!"]
+        response:
+          on: message
+          args:
+            - lobby
+            - Hello everyone!
+          match:
+            - json: "$.0"
+              value: "lobby"
+            - json: "$.1"
+              value: "Hello everyone!"
+      # Test backwards compatability of the `channel` and `data` options
+      - emit:
+          channel: join
+          data: private-room
+        response:
+          channel: joined
+          data: Welcome to private-room
+      # Attempt to join channel in secured namespaced without logging in
+      - emit: [ "join", "lobby" ]
+        reconnect: true
+        namespace: /secured
+        acknowledge:
+          args: false
+      # Login to the secured namespace and capture the token in the response
+      - emit: [ "login", { username: "setup", password: "setup" } ]
+        namespace: /secured
+        response:
+          on: success
+          capture:
+            json: "$.token"
+            as: "token"
+      # Configure the token as a http header
+      - function: "setToken"
+      # Connecting to secured after a successful login should work
+      - emit: [ "join", "lobby" ]
+        reconnect: true
+        namespace: /secured
+        response:
+          on: joined
+          args:
+            - Welcome to secured channel lobby
