@@ -49,8 +49,8 @@ scenarioFiles.forEach((fileName) => {
 
     validateResult(fileName, result)
   } catch (err) {
-    console.error(`Failed run scenario ${fileName}.`)
-    console.error(err.stderr.toString())
+    console.log(`Failed run scenario ${fileName}.`)
+    console.log(err.stderr.toString())
     console.log(err.stdout.toString())
     process.exit(err.status)
   }
@@ -88,8 +88,9 @@ function validateResult(fileName, result) {
 
   if (errors.length) {
     console.log(result)
-    console.error(`[${fileName}] Errors:`)
-    errors.map(err => console.error(`  ${err}`))
+    console.log(`[${fileName}] Errors:`)
+    errors.map(err => console.log(`  ${err}`))
+    console.log('\n');
 
     return false
   }

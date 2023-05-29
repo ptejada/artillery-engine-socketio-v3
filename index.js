@@ -268,7 +268,9 @@ SocketIoEngine.prototype.step = function (requestSpec, ee) {
     let connectionOnly = requestSpec?.connect
 
     // Backward compatability for the reconnect option
-    connectionOnly ??= requestSpec.reconnect ? {} : undefined
+    if (connectionOnly === undefined) {
+      connectionOnly = requestSpec.reconnect ? {} : undefined
+    }
 
     self.loadContextSocket(requestSpec.namespace, connectionOnly, context, function(err, socket) {
       if(err) {
