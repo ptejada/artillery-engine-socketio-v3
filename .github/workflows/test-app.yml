@@ -33,7 +33,7 @@ jobs:
         yarn add socket.io@${{ matrix.socketio }} artillery@${{ matrix.artillery }}
         echo "::endgroup::"
         echo 'TEST_RESULT<<EOF' >> $GITHUB_ENV
-        yarn test-new 1>&2 >> $GITHUB_ENV
+        yarn test-new | tee -a $GITHUB_ENV
         echo 'EOF' >> $GITHUB_ENV
     - name: Check failure
       if: "contains(env.TEST_RESULT, 'Errors:') || contains(env.TEST_RESULT, 'Scenarios completed: 0') || contains(env.TEST_RESULT, 'error Command failed')"
