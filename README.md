@@ -15,10 +15,10 @@ scenarios:
   - engine: socketio-v3
     flow:
       - emit: ["join", "lobby"]
-      # It can also can be written as    
+      # It can also can be written as
       - emit:
         - join
-        - lobby  
+        - lobby
 ```
 
 All other advance options like `namespace` and `acknowledge` can still be included alongside the `emit` action but not 
@@ -31,6 +31,36 @@ scenarios:
       - emit: ["join", "lobby"]
         namespace: /nsp1
 ```
+
+### Socket.IO v3 Engine Options
+
+| Option                                  | Description                                                                                                                                                          |
+|-----------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `config.socketio.*`                     | Set any Socket.IO [Client options].                                                                                                                                  |
+| `scenario.flow.*.emit`                  | Array of arguments to send to the server. The first item in the list is usually referred as the event name while everything else following are additional arguments. |
+| `scenario.flow.*.emit.channel`          | \[DEPRECATED] Equivalent to `emit[0]`.                                                                                                                               |
+| `scenario.flow.*.emit.data`             | \[DEPRECATED] Equivalent to `emit[1]`.                                                                                                                               |
+| `scenatio.flow.*.connect`               | Overwrites any [Client options] from `config.socketio.*` and starts a new Socket.IO connection.                                                                      |
+| `scenatio.flow.*.namespace`             | Optional Socket.IO namespace to use alongside `emit` and `connect`.                                                                                                  |
+| `scenatio.flow.*.response`              | Object defining how to handle a following event following for an `emit` action.                                                                                      |
+| `scenatio.flow.*.response.on`           | The name of the event to listen to.                                                                                                                                  |
+| `scenatio.flow.*.response.capture`      | Define logic to capture or remember a value from the event. This can be object or an array of objects.                                                               |
+| `scenatio.flow.*.response.capture.json` | JSON path to capture or remember. Ex `$.0.token` reference token in this document `[{"token": "..."}]`.                                                              |
+| `scenatio.flow.*.response.capture.as`   | The name how the captured value will be remembered as.                                                                                                               |
+| `scenatio.flow.*.response.args`         | Assert the response asserts the object defined in this option.                                                                                                       |
+| `scenatio.flow.*.response.data`         | \[DEPRECATED] Use `args` instead.                                                                                                                                    |
+| `scenatio.flow.*.response.match`        | Asserts the response match specific values from a json document. This can be an object or an array of objects.                                                       |
+| `scenatio.flow.*.response.match.json`   | JSON path to read the expected value from.                                                                                                                           |
+| `scenatio.flow.*.response.match.value`  | The expected value at the JSON path.                                                                                                                                 |
+| `scenatio.flow.*.acknowledge`           | An object defining how to handle an `ack` response from Socket.IO                                                                                                    |
+| `scenatio.flow.*.acknowledge.args`      | Has the same behavior as `scenatio.flow.*.response.args`.                                                                                                            |
+| `scenatio.flow.*.acknowledge.data`      | \[DEPRECATED] Use `args` instead.                                                                                                                                    |
+| `scenatio.flow.*.acknowledge.capture`   | Accepts same options as `scenatio.flow.*.response.capture`.                                                                                                          |
+| `scenatio.flow.*.acknowledge.match`     | Accepts same options as `scenatio.flow.*.response.match`.                                                                                                            |
+| `scenatio.flow.*.think`                 | Number of seconds to wait.                                                                                                                                           |
+| `scenatio.flow.*.jitter`                | Option to be used with `think`. This option expects a value in milliseconds serves as random +- to offset the original `think` value                                 |
+| `scenatio.flow.*.get`                   | Performs an HTTP GET request. See [Testing HTTP] for more info.                                                                                                      |
+| `scenatio.flow.*.post`                  | Performs an HTTP POST request. See [Testing HTTP] for more info.                                                                                                     |
 
 ### Install & Configure
 
@@ -147,3 +177,6 @@ function setToken(context, userEvents, next) {
 
 ### Roadmap
 [Roadmap board](https://github.com/ptejada/artillery-engine-socketio-v3/projects/2)
+
+[Client options]: https://socket.io/docs/v4/client-options/
+[Testing HTTP]: https://www.artillery.io/docs/guides/guides/http-reference
