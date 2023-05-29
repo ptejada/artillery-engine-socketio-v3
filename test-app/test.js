@@ -28,7 +28,13 @@ const scenarioExpectation = {
     },
     Events: 2
   },
-
+  "auth-from-payload.yml": {
+    Codes: {
+      101: 1,
+      200: 1,
+    },
+    Events: 1
+  },
 }
 
 /*************** DO NOT EDIT BELOW THIS LINE ***********************/
@@ -38,9 +44,16 @@ let port = process.env.PORT || 3009;
 scenarioFiles.forEach((fileName) => {
   const file = `artillery/${fileName}`
 
-  const result = execSync(`SERVER_PORT=${port++} npx artillery run ${file}`).toString();
+  try {
+    const result = execSync(`SERVER_PORT=${port++} npx artillery run ${file}`).toString();
 
-  validateResult(fileName, result)
+    validateResult(fileName, result)
+  } catch (err) {
+    console.error(`Failed run scenario ${fileName}.`)
+    console.error(err.stderr.toString())
+    console.log(err.stdout.toString())
+    process.exit(err.status)
+  }
 })
 
 function validateResult(fileName, result) {

@@ -79,9 +79,11 @@ function validAuth({token, type}) {
 function requestListener(req, res) {
   switch (req.url) {
     case '/get-token':
-      res.setHeader("Content-Type", "application/json");
-      res.writeHead(200);
-      res.end(JSON.stringify({token: makeToken()}));
+      handlePost(req, (data) => {
+        res.setHeader("Content-Type", "application/json");
+        res.writeHead(200);
+        res.end(JSON.stringify({token: makeToken(), input: data}));
+      });
       break;
     default:
       res.writeHead(404);
@@ -96,4 +98,12 @@ function makeToken () {
   tokens.push(token)
 
   return token
+}
+
+function handlePost(req, cb) {
+  let body = '';
+  req.on('data', chunk => body += chunk.toString())
+  req.on('end', () => {
+    cb(body ? JSON.parse(body) : {})
+  })
 }

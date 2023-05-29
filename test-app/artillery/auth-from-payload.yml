@@ -1,0 +1,39 @@
+config:
+  target: "http://localhost:{{ $processEnvironment.SERVER_PORT }}"
+  phases:
+    - duration: 1
+      arrivalRate: 1
+  payload:
+    # path is relative to the location of the test script
+    path: "users.csv"
+    fields:
+      - "username"
+      - "password"
+  engines:
+    socketio-v3: {}
+  processor: "../functions.js"
+scenarios:
+  - name: Authentication via Dynamic Auth from external service
+    engine: socketio-v3
+    flow:
+      - post:
+          url: /get-token
+          json:
+            username: "{{username}}"
+            password: "{{password}}"
+          match:
+            - json: '$.input.username'
+              value: "{{username}}"
+            - json: '$.input.password'
+              value: "{{password}}"
+          capture:
+            json: "$.token"
+            as: "token"
+      - connect:
+          auth:
+            token: "{{token}}"
+        namespace: /secured-md
+      - emit: [ "ping" ]
+        namespace: /secured-md
+        acknowledge:
+          args: true
