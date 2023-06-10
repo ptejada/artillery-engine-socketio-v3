@@ -37,6 +37,13 @@ io.of('secured').on('connection', function(socket) {
 })
 
 io.of('inspect').on('connection', (socket) => {
+  socket.onAny(function(...params) {
+    const ack = params.pop()
+
+    if (typeof ack === 'function') {
+      ack(...params)
+    }
+  })
   socket.emit('result', {
     headers: socket.request.headers,
     query: socket.request.query

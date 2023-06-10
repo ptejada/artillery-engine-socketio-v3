@@ -46,7 +46,7 @@ scenarioFiles.forEach((fileName) => {
   const file = `artillery/${fileName}`
 
   try {
-    const result = execSync(`SERVER_PORT=${port++} npx artillery run ${file}`).toString();
+    const result = execSync(`DEBUG=socketio SERVER_PORT=${port++} npx artillery run ${file}`).toString();
 
     errors = errors.concat(validateResult(fileName, result))
     console.log(result)

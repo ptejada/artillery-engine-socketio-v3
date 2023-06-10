@@ -7,8 +7,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "test-new": "PORT=3009 node test.js",
-    "test": "DEBUG=socketio SERVER_PORT=\"${PORT:-3009}\" artillery run artillery.yml"
+    "test": "PORT=3009 node test.js"
   },
   "dependencies": {
     "artillery": "^1.6.1",
